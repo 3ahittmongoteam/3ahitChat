@@ -1,0 +1,23 @@
+.channel {
+	padding-left: 20px;
+	padding-right: 20px;
+	width: 160px;
+	height: 46px;
+	line-height: 46px;
+	border-top: 2px solid #eeeeee;
+	border-bottom: 2px solid #eeeeee;
+}
+
+.channel:hover {
+	background-color: #cbdcea;
+	border-right: 4px solid #4ea6ea;
+	border-top: 2px solid #4ea6ea;
+	border-bottom: 2px solid #4ea6ea;
+}
+
+#marked {
+	background-color: #4ea6ea;
+	border-right: 4px solid #4ea6ea;
+	border-top: 2px solid #4ea6ea;
+	border-bottom: 2px solid #4ea6ea;
+}

@@ -3,28 +3,28 @@
  * client side backend.
  */
 var sidebar;
+var channelList = [];
 
 function initUI() {
 	sidebar = document.getElementById("sidebar");
-	addChannel("default");
-	addChannel("channel 4me");
-	addChannel("channel 4you");
-	addChannel("channel 4her");
-	addChannel("channel 4him");
-	addChannel("channel 4them");
-	on_channelClick(sidebar.children[0]);
+	addChannel("default", 0);
+	addChannel("channel 4me", 1);
+	addChannel("channel 4you", 2);
+	addChannel("channel 4her", 3);
+	addChannel("channel 4him", 4);
+	addChannel("channel 4them", 5);
 }
 
-function on_channelClick(element) {
+function on_channelClick(element, globalID) {
 	var channels = sidebar.children;
 	if(element.className != "channel marked")
-		notifyChannelChange(element.innerHTML);
+		notifyChannelChange(globalID);
 	for(var i = 0; i < channels.length; i++)
 		channels[i].className = "channel";
 	element.className = "channel marked";
 }
 
-function addChannel(name) {
+function addChannel(name, globalID) {
 	var channel = document.createElement("div");
 	var channelName = document.createTextNode(name);
 	channel.appendChild(channelName);
@@ -32,12 +32,15 @@ function addChannel(name) {
 	//Simple javascript event sender hack
 	var obj = {
 		handleEvent: function() {
-			on_channelClick(this.me);
+			on_channelClick(this.me, this.ID);
 		},
-		me: channel
+		me: channel,
+		ID: globalID
 	};
 	channel.addEventListener("click", obj, false);
+	channelList[globalID] = channel;
 	sidebar.appendChild(channel);
+	on_channelClick(channel, globalID);
 }
 
-function notifyChannelChange(name) {} //backend connection
+function notifyChannelChange(globalID) {} //backend connection

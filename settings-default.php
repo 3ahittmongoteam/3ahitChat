@@ -9,5 +9,5 @@ define('DB_USER', 'DB_USER');
 define('DB_PASSWORD', 'DB_PASSWORD');
 define('MAX_CLIENT', 'MAX_CLIENT');
 define('MAX_SIZE', 'MAX_SIZE');
-define('ALLOW_GUEST', "ALLOW_GUEST');
+define('ALLOW_GUEST', 'ALLOW_GUEST');
 ?>

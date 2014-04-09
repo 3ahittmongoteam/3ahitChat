@@ -26,12 +26,20 @@ body {
 }
 
 #messagecontent {
+	position: absolute;
 	background-color: purple;
-    height: 100%;
+	bottom: 50px;
+	right: 0px;
+	left: 200px;
+	top: 0px;
+	overflow-y: scroll;
 }
 
 #commandbar {
+	position: absolute;
 	background-color: red;
 	height: 50px;
-	margin-top: -50px;
+	bottom: 0px;
+	right: 0px;
+	left: 200px;
 }

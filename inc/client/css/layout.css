@@ -1,0 +1,37 @@
+* {
+	margin: 0px;
+	padding: 0px;
+	border: 0px;
+}
+
+html {
+	height: 100%;
+}
+
+body {
+	background-color: #f7f7f7;
+	height: 100%;
+}
+
+#sidebar {
+	width: 200px;
+	height: 100%;
+	background-color: blue;
+	float: left;
+}
+
+#mainwindow {
+	height: 100%;
+	background-color: green;
+}
+
+#messagecontent {
+	background-color: purple;
+    height: 100%;
+}
+
+#commandbar {
+	background-color: red;
+	height: 50px;
+	margin-top: -50px;
+}

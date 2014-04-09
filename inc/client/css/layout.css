@@ -14,32 +14,29 @@ body {
 }
 
 #sidebar {
+	position: absolute;
 	width: 200px;
-	height: 100%;
-	background-color: blue;
-	float: left;
-}
-
-#mainwindow {
-	height: 100%;
-	background-color: green;
+	top: 0px;
+	bottom: 0px;
+	left: 0px;
+	border: 1px solid black;
 }
 
 #messagecontent {
 	position: absolute;
-	background-color: purple;
 	bottom: 50px;
 	right: 0px;
 	left: 200px;
 	top: 0px;
 	overflow-y: scroll;
+	border: 1px solid black;
 }
 
 #commandbar {
 	position: absolute;
-	background-color: red;
 	height: 50px;
 	bottom: 0px;
 	right: 0px;
 	left: 200px;
+	border: 1px solid black;
 }

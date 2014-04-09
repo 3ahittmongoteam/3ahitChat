@@ -31,7 +31,9 @@ class CommandManager {
 	 * Its very likely, that you call this method, if you want to execute a command.
 	 */
 	public function processCommand($user, $str) {
-		if(substr($str, 0, 1) == '/') {
+		if(strlen($str) < 2)
+			return false;
+		else if(substr($str, 0, 1) == '/') {
 			$args = explode(" ", substr($str, 1));
 			return processCommandArgs($user, $args);
 		}else

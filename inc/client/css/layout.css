@@ -11,7 +11,6 @@ html {
 body {
 	height: 100%;
 	font-family: Calibri;
-	background-color: white;
 }
 
 #sidebar {
@@ -30,6 +29,7 @@ body {
 	left: 200px;
 	top: 0px;
 	overflow-y: scroll;
+	background-color: white;
 }
 
 #commandbar {

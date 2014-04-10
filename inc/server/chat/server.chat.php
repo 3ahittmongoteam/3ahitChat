@@ -2,6 +2,7 @@
 require_once("class.user.php");
 require_once("class.command-manager.php");
 require_once("class.Log.php");
+require_once("class.channels.php");
 
 class Server(){
 	private $mastersocket;
@@ -276,7 +277,45 @@ class Server(){
 	}
 	return $ret;
 }
+	private function decode($msg=""){
 
+		$value = unpack('H*', $msg[1]);
+		$datalength =  base_convert($value[1], 16, 10) & 127;
+		
+		$maskstart = 2;
+		if($datalength == 126)
+			$maskstart = 4;
+		if($datalength == 127)
+			$maskstart = 10;
+
+		$mask = array(	$msg[$maskstart + 0],
+						$msg[$maskstart + 1],
+						$msg[$maskstart + 2],
+						$msg[$maskstart + 3]);
+		for($a = 0; $a < 4; $a++)
+		{		
+			$value = unpack('H*', $mask[$a]);
+			$mask[$a] = base_convert($value[1], 16, 10);
+		}
+		$i = $maskstart + 4;
+		$index = 0;
+		$output = "";
+		$curr ="";
+		if($i == strlen($msg))
+		{
+			console("No message recived");
+			return "";
+		}
+		while($i < strlen($msg))
+		{
+			$curr = $msg[$i++];
+			$value = unpack('H*', $curr);
+			$curr =  base_convert($value[1], 16, 10);	
+			$rdy = chr((int)$curr ^ (int)$mask[$index++ % 4]);		
+			$output = $output . htmlentities($rdy);
+		}
+		return $output;
+	}
 	function send($empfaenger,  $msg, $header=NULL){
 		$premsg = "";
 		foreach($header as $key=>$value){

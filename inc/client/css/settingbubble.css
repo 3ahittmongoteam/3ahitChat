@@ -5,6 +5,7 @@
 	height: 35px;
 	bottom: 25px;
 	background-image: url('../img/bubblearrow.png');
+	display: none;
 }
 
 #settingbubble {
@@ -15,4 +16,5 @@
 	bottom: 60px;
 	border: 1px solid #dadada;
 	background-color: #eeeeee;
+	display: none;
 }

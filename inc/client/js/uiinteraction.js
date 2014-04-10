@@ -4,9 +4,14 @@
  */
 var sidebar;
 var channelList = [];
+var settingBubbleOpen = false;
+var settingBubble;
+var settingBubbleArrow;
 
 function initUI() {
 	sidebar = document.getElementById("sidebar");
+	settingBubble = document.getElementById("settingbubble");
+	settingBubbleArrow = document.getElementById("settingbubblearrow");
 	addChannel("default", 0);
 	addChannel("channel 4me", 1);
 	addChannel("channel 4you", 2);
@@ -41,6 +46,17 @@ function addChannel(name, globalID) {
 	channelList[globalID] = channel;
 	sidebar.appendChild(channel);
 	on_channelClick(channel, globalID);
+}
+
+function on_SettingButtonClick() {
+	if(settingBubbleOpen) {
+		settingBubble.style.display = "none";
+		settingBubbleArrow.style.display = "none";
+	}else {
+		settingBubble.style.display = "block";
+		settingBubbleArrow.style.display = "block";
+	}
+	settingBubbleOpen = !settingBubbleOpen;
 }
 
 function notifyChannelChange(globalID) {} //backend connection

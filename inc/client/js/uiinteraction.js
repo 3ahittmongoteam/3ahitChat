@@ -65,6 +65,19 @@ function on_BodyClick() {
 	}
 }
 
+function goFullScreen() {
+	var body = document.getElementsByTagName("body")[0];
+	if(body.requestFullscreen) {
+		body.requestFullscreen();
+	}else if (body.msRequestFullscreen) {
+		body.msRequestFullscreen();
+	}else if (body.mozRequestFullScreen) {
+		body.mozRequestFullScreen();
+	}else if (elem.webkitRequestFullscreen) {
+		body.webkitRequestFullscreen();
+	}
+}
+
 function keepBubbleAlive() {
 	settingBubbleBlock = true;
 }

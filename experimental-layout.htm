@@ -16,7 +16,9 @@
 		<div id="commandbar">
 			<div id="sendTextDiv"><input id="sendText" type="text"/></div>
 			<div id="settingButton" onclick="on_SettingButtonClick();"></div>
-			<div id="settingbubble" onclick="keepBubbleAlive();"></div>
+			<div id="settingbubble" onclick="keepBubbleAlive();">
+				<a href="javascript: addChannel('bob', 42);">Add a channel test</a>
+			</div>
 			<div id="settingbubblearrow" onclick="keepBubbleAlive();"></div>
 		</div>
 	</body>

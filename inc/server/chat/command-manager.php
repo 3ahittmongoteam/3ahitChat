@@ -35,7 +35,7 @@ class CommandManager {
 			return false;
 		else if(substr($str, 0, 1) == '/') {
 			$args = explode(" ", substr($str, 1));
-			return processCommandArgs($user, $args);
+			return processCommandArgs($user, $args, 0);
 		}else
 			return false;
 	}
@@ -44,10 +44,10 @@ class CommandManager {
 	 * This method is for recursive command parsing. Most likely a driver itself will
 	 * call it.
 	 */
-	public function processCommandArgs($user, $args) {
-		for($this->commands as $cmd)
+	public function processCommandArgs($user, $args, $origin) {
+		foreach($this->commands as $cmd)
 			if($cmd->matches($args[0]))
-				return $cmd->execute($this->server, $user, $args);
+				return $cmd->execute($this->server, $user, $args, $origin);
 		return false;
 	}
 }

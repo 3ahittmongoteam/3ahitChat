@@ -19,12 +19,14 @@ class CommandManager {
 	}
 	
 	/*
-	 * Register your new drivers here.
-	 * Do not forget to include the specific files for your driver first.
+	 * Drivers are automatically registered here. Place them in the command-drivers sub folder.
 	 */
 	private function registerCommands() {
-		//Example:
-		//array_push($this->commands, new SampleCmdDriver());
+		$driverfiles = scandir('inc/server/chat/command-drivers');
+		foreach($driverfiles as $driverfile) {
+			$classname = substr($driverfile, 0, strrchr($driverfile, '.'));
+			array_push($this->commands, new $classname());
+		}
 	}
 	
 	/*

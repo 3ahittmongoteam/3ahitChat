@@ -21,4 +21,9 @@
 	width: 30px;
 	height: 30px;
 	background-image: url('../img/gear.png');
+	border: 1px solid #dadada;
+}
+
+#settingButton:active {
+	background-color: #dadada;
 }

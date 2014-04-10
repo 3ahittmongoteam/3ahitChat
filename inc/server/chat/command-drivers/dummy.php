@@ -13,6 +13,7 @@ class dummy implements ICommand {
 	public function execute($server, $user, $args, $origin) {
 		$header = array('Error'=>'CommandError');
 		$server->send($user, 'You idiot! Used ' . $args[$origin] . ' ' . $this->counter . ' time.', $header);
+		return true;
 	}
 }
 ?>

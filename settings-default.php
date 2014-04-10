@@ -7,7 +7,14 @@ define('DB_ADDRESS', 'DB_ADDRESS');
 define('DB_PORT', 'DB_PORT');
 define('DB_USER', 'DB_USER');
 define('DB_PASSWORD', 'DB_PASSWORD');
-define('MAX_CLIENT', 'MAX_CLIENT');
+
+//Anzahl der Benutzer die insgesamt am Server sein dürfen
+define('MAX_CLIENT_GLOBAL', 'MAX_CLIENT');
+
+//Anzhahl der Benutzer die maximal in einem neuen Channel sein dürfen
+define('MAX_CLIENT_CHANNEL_DEFAULT', '123');
+
+//Größte Anhal an Zeichen, die gesendet werden darf
 define('MAX_SIZE', 'MAX_SIZE');
 define('ALLOW_GUEST', 'ALLOW_GUEST');
 define('GLOBAL_SALT', '');

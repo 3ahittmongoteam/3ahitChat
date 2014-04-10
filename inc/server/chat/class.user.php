@@ -6,7 +6,8 @@ class User{
   public var $ip;  
   public var $handshake;
   public var $socket;
-  
+  public var $privileges;
+  public var $channel;
   
   public function __construct($socket, $name, $ip="unknown"){
 	$this->socket = $socket;
@@ -20,7 +21,6 @@ class User{
   }
   public function getID(){
 	return $this->id;
-  }
-    
+  }    
 }
 ?>

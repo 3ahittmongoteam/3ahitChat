@@ -25,7 +25,7 @@ class Server(){
 
 	public function run(){
 		socket_listen($this->mastersocket,MAX_CLIENT) or die("socket_listen() failed");		
-		console(PHP_EOL . "Server Started : ".date('Y-m-d H:i:s'));
+		console("\n" . "Server Started : ".date('Y-m-d H:i:s'));
 		console("Master socket  : ".$master);
 		console("Listening on   : ".SOCKET_ADDRESS." port ".SOCKET_PORT);
 		
@@ -68,11 +68,11 @@ class Server(){
 		$header = $whole[0];
 		if(strlen($action) > $char_limit) return send($sender->socket, "", array("Error"=>"TextTooLong","MaxAnzahl"=>$char_limit));
 		
-		processCommand($sender, $action);
+		if(processCommand($sender, $action)) return console("Command executed: ". $action);
 
-	  switch($action){
-			case ""  : send($user->socket,"<span class='error'><b>No message recived</b></span>");  break;
-		default      : sendall($user->socket,$action);   			  break;
+		switch($action){
+			case ""  : send($user->socket,"", array("Error"=>"NoMessage"));  break;
+		default      : sendAll($user->socket,$action);   			  break;
 	  }
 		
 	}
@@ -344,13 +344,19 @@ class Server(){
 	function send($empfaenger,  $msg, $header=NULL){
 		$premsg = "";
 		foreach($header as $key=>$value){
-			$premsg .= $key.":".$value.PHP_EOL;
+			$premsg .= $key.":".$value."\n";
 		}
-		$premsg .= PHP_EOL;
+		$premsg .= "\n";
 		if($header == NULL)
-			$premsg .= PHP_EOL;
+			$premsg .= "\n";
 		$msg = wrap($premsg . $msg);
 		socket_write($client,$msg,strlen(($msg)));
+	}
+ 
+	function sendAll($sender,  $msg, $header=NULL){
+		foreach($this->users as $u){
+			send($u, $msg, $header);
+		}	
 	}
  
 	//Gibt Text in die Console aus

@@ -1,4 +1,5 @@
 <?php
+require_once("../../../settings.php");
 require_once("class.user.php");
 require_once("class.command-manager.php");
 require_once("class.Log.php");
@@ -9,8 +10,11 @@ class Server(){
 	private $masterpasswort;
 	private $cmdManager;
 	private $sockets;
-	public $users = new array();
-	public $channels = new array();
+	
+	public $users = array();
+	public $channels = array();
+	public $char_limit = MAX_SIZE;
+	public $global_limit = MAX_CLIENT_GLOBAL;
 	
 	//Baut auf den Mastersocket einen Socket, der bereit zum hören ist, aber noch nicht aktiviert ist
 	public function __construct(){
@@ -45,11 +49,32 @@ class Server(){
 					else{
 						$user = getUserBySocket($socket);
 						if(!$user->handshake){dohandshake($user,$buffer); }
-						else { process($user,$buffer); }
+						else { processMessage($user,$buffer); }
 					}
 				}
 			}
 		}	
+	}
+	
+	private function processMessage($sender, $msg){
+		$value = unpack('H*', $msg[0]);
+		$opcode =  base_convert($value[1], 16, 10);
+		if($opcode == 136 ||$opcode == 8) return disconnectSocket($sender->socket);
+		$msg = decode($msg);
+		
+		$whole = explode("\n\n", $msg);
+		if(count($whole) < 2) { var_dump($whole); return console("Bad Package: "); }
+		$action = $whole[1];
+		$header = $whole[0];
+		if(strlen($action) > $char_limit) return send($sender->socket, "", array("Error"=>"TextTooLong","MaxAnzahl"=>$char_limit));
+		
+		processCommand($sender, $action);
+
+	  switch($action){
+			case ""  : send($user->socket,"<span class='error'><b>No message recived</b></span>");  break;
+		default      : sendall($user->socket,$action);   			  break;
+	  }
+		
 	}
 	
 	private function connect($socketToConnect){
@@ -214,8 +239,7 @@ class Server(){
 		if(count($users) > MAX_CLIENT_GLOBAL)
 		{
 			console("Server Room Full");
-			$error = "You could not connect, because the room is full(".(count($users)-1)."/".($roomLimit).")";
-			send($user->socket,$tofull); 
+			send($user->socket,"", array("error"=>"RoomFull", "maxUser"=>$global_limit)); 
 			return disconnectSocket($user->socket, true);
 		}
 		return true;
@@ -316,6 +340,7 @@ class Server(){
 		}
 		return $output;
 	}
+	
 	function send($empfaenger,  $msg, $header=NULL){
 		$premsg = "";
 		foreach($header as $key=>$value){
@@ -324,22 +349,10 @@ class Server(){
 		$premsg .= PHP_EOL;
 		if($header == NULL)
 			$premsg .= PHP_EOL;
-		$msg = wrap($premsg . urlToA($msg));
+		$msg = wrap($premsg . $msg);
 		socket_write($client,$msg,strlen(($msg)));
 	}
-
-	function urlToA($string){
-    preg_match_all('/(http(?:s?):\/\/[^\s]+)/', $string, $matches);
-    if($matches)
-    {
-        foreach($matches[0] as $match)
-        {
-            $hypertext = '<a style="color: #689CD9;" href="' . $match . '" target="_blank">' . $match . '</a>';
-            $string = str_replace($match, $hypertext, $string);
-        }
-    }
-    return $string;
-	}  
+ 
 	//Gibt Text in die Console aus
 	public function console($msg=""){ echo $msg."\n"; }
 }

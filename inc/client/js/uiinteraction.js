@@ -4,14 +4,16 @@
  */
 var sidebar;
 var channelList = [];
-var settingBubbleOpen = false;
+var settingBubbleBlock = false;
 var settingBubble;
 var settingBubbleArrow;
+var settingButton;
 
 function initUI() {
 	sidebar = document.getElementById("sidebar");
 	settingBubble = document.getElementById("settingbubble");
 	settingBubbleArrow = document.getElementById("settingbubblearrow");
+	settingButton = document.getElementById("settingButton");
 	addChannel("default", 0);
 	addChannel("channel 4me", 1);
 	addChannel("channel 4you", 2);
@@ -49,14 +51,22 @@ function addChannel(name, globalID) {
 }
 
 function on_SettingButtonClick() {
-	if(settingBubbleOpen) {
+	settingBubble.style.display = "block";
+	settingBubbleArrow.style.display = "block";
+	settingBubbleBlock = true;
+}
+
+function on_BodyClick() {
+	if(settingBubbleBlock)
+		settingBubbleBlock = false;
+	else {
 		settingBubble.style.display = "none";
 		settingBubbleArrow.style.display = "none";
-	}else {
-		settingBubble.style.display = "block";
-		settingBubbleArrow.style.display = "block";
 	}
-	settingBubbleOpen = !settingBubbleOpen;
+}
+
+function keepBubbleAlive() {
+	settingBubbleBlock = true;
 }
 
 function notifyChannelChange(globalID) {} //backend connection

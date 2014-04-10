@@ -73,7 +73,7 @@ function goFullScreen() {
 		body.msRequestFullscreen();
 	}else if (body.mozRequestFullScreen) {
 		body.mozRequestFullScreen();
-	}else if (elem.webkitRequestFullscreen) {
+	}else if (body.webkitRequestFullscreen) {
 		body.webkitRequestFullscreen();
 	}
 }

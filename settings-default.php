@@ -10,4 +10,6 @@ define('DB_PASSWORD', 'DB_PASSWORD');
 define('MAX_CLIENT', 'MAX_CLIENT');
 define('MAX_SIZE', 'MAX_SIZE');
 define('ALLOW_GUEST', 'ALLOW_GUEST');
+define('GLOBAL_SALT', '');
+define('SOCKET_MASTER_PASSWORT', 'sha1HashOfPwd');
 ?>

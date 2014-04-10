@@ -15,7 +15,7 @@ class CommandManager {
 	 */
 	public function __construct($server) {
 		$this->server = $server;
-		registerCommands();
+		$this->registerCommands();
 	}
 	
 	/*

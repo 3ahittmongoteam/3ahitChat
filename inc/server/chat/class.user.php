@@ -14,7 +14,7 @@ class User{
 	$this->name = $name;
 	$this->ip = $ip;
 	
-    $this->id = substr(((string)$socket), strlen((string)$socket)-2)	
+    $this->id = substr(((string)$socket), strlen((string)$socket)-2);	
   }
   public function getID(){
 	return $this->id;

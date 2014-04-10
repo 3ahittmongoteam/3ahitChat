@@ -1,5 +1,4 @@
 <?php
-require_once("../../../settings.php");
 class Channel {
 	private static $idcounter = 0;
 	private $id;

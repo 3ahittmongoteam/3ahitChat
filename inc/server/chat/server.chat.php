@@ -1,11 +1,6 @@
 <?php
-require_once("../../../settings.php");
-require_once("class.user.php");
-require_once("class.command-manager.php");
-require_once("class.Log.php");
-require_once("class.channels.php");
 
-class Server(){
+class ChatServer{
 	private $mastersocket;
 	private $masterpasswort;
 	private $cmdManager;
@@ -18,38 +13,38 @@ class Server(){
 	
 	//Baut auf den Mastersocket einen Socket, der bereit zum hören ist, aber noch nicht aktiviert ist
 	public function __construct(){
-		$this->mastersocket = buildServer(SOCKET_ADDRESS,SOCKET_PORT);
 		$this->cmdManager = new CommandManager($this);
-		$this->sockets = =new array($this->mastersocket);
+		$this->sockets = array($this->mastersocket);
 	}
 
-	public function run(){
-		socket_listen($this->mastersocket,MAX_CLIENT) or die("socket_listen() failed");		
-		console("\n" . "Server Started : ".date('Y-m-d H:i:s'));
-		console("Master socket  : ".$master);
-		console("Listening on   : ".SOCKET_ADDRESS." port ".SOCKET_PORT);
+	public function run(){	
+		$this->mastersocket = $this->buildServer(SOCKET_ADDRESS,SOCKET_PORT);
+		socket_listen($this->mastersocket,MAX_CLIENT_GLOBAL) or die("socket_listen() failed");		
+		$this->console("\n" . "Server Started : ".date('Y-m-d H:i:s'));
+		$this->console("Master socket  : ".$this->mastersocket);
+		$this->console("Listening on   : ".SOCKET_ADDRESS." port ".SOCKET_PORT);
 		
 		while(true){
 			set_time_limit(0);
 			ob_implicit_flush();						
 			
 			$changed = $this->sockets;
-			@socket_select($changed,NULL,NULL,NULL);
+			@socket_select($changed,$e = NULL, $a = NULL,NULL);
 			
 			foreach($changed as $SingleSocket){
 				if($SingleSocket == $this->mastersocket){
 					$newClientOnMasterSocket = socket_accept($this->mastersocket);
-					if($newClientOnMasterSocket == false){ console("socket_accept() failed"); continue; }
+					if($newClientOnMasterSocket == false){ $this->console("socket_accept() failed"); continue; }
 					else { 
 						connect($newClientOnMasterSocket); 
 					}
 				} else {
 					$bytes = @socket_recv($SingleSocket, $buffer, MAX_SIZE, 0);
-					if($bytes == 0){ disconnectSocket($SingleSocket); }
+					if($bytes == 0){ $this->disconnectSocket($SingleSocket); }
 					else{
-						$user = getUserBySocket($socket);
-						if(!$user->handshake){dohandshake($user,$buffer); }
-						else { processMessage($user,$buffer); }
+						$user = $this->getUserBySocket($socket);
+						if(!$user->handshake){ $this->dohandshake($user,$buffer); }
+						else { $this->processMessage($user,$buffer); }
 					}
 				}
 			}
@@ -59,16 +54,16 @@ class Server(){
 	private function processMessage($sender, $msg){
 		$value = unpack('H*', $msg[0]);
 		$opcode =  base_convert($value[1], 16, 10);
-		if($opcode == 136 ||$opcode == 8) return disconnectSocket($sender->socket);
+		if($opcode == 136 ||$opcode == 8) return $this->disconnectSocket($sender->socket);
 		$msg = decode($msg);
 		
 		$whole = explode("\n\n", $msg);
-		if(count($whole) < 2) { var_dump($whole); return console("Bad Package: "); }
+		if(count($whole) < 2) { var_dump($whole); return $this->console("Bad Package: "); }
 		$action = $whole[1];
 		$header = $whole[0];
 		if(strlen($action) > $char_limit) return send($sender->socket, "", array("Error"=>"TextTooLong","MaxAnzahl"=>$char_limit));
 		
-		if(processCommand($sender, $action)) return console("Command executed: ". $action);
+		if(processCommand($sender, $action)) return $this->console("Command executed: ". $action);
 
 		switch($action){
 			case ""  : send($user->socket,"", array("Error"=>"NoMessage"));  break;
@@ -95,7 +90,7 @@ class Server(){
 		  
 		//Delete from Socket Array
 		$index = array_search($socketToDisconnect,$this->sockets);
-		socket_close($socketToDisconnect) or return false;
+		socket_close($socketToDisconnect);
 		if($index >= 0 && !is_null($found)){ 
 			array_splice($this->sockets,$index,1);
 			array_splice($this->users,$found,1);	
@@ -119,7 +114,7 @@ class Server(){
 			}
 		}
 		$index = array_search($socketFromUser,$this->sockets);
-		socket_close($socketFromUser) or return false;
+		socket_close($socketFromUser);
 		if($index>=0 && !is_null($found)){ 
 			array_splice($this->sockets,$index,1); 
 			array_splice($this->users,$found,1);
@@ -143,7 +138,7 @@ class Server(){
 			}
 		}
 		$index = array_search($socketFromUser,$this->sockets);
-		socket_close($socketFromUser) or return false;
+		socket_close($socketFromUser);
 		if($index>=0 && !is_null($found)){ 
 			array_splice($this->sockets,$index,1); 
 			array_splice($this->users,$found,1);
@@ -151,7 +146,7 @@ class Server(){
 		}		
 		return false;
 	}
-	public function disconnectUser($UserToDisconnect){,
+	public function disconnectUser($UserToDisconnect){
 		if(!isset($UserToDisconnect) || empty($UserToDisconnect)) return false;
 		
 		$userindex = array_search($UserToDisconnect,$this->users);		
@@ -187,7 +182,7 @@ class Server(){
 		}
 	}
 	public function getUsersByIP($ipToFind){
-		$uarr = new array();
+		$uarr = array();
 		foreach($this->users as $singleUser){
 			if($singleUser->ip == $ipToFind)
 				array_push($uarr, $singleUser);
@@ -198,7 +193,7 @@ class Server(){
 	//Returns a assoziativ array with the connected Users.
 	//The key of the array is the user ID and the value is the name.
 	public function getConnectedUsers(){
-		$uarr = new array();
+		$uarr = array();
 		foreach($this->users as $user){
 			$uarr[$user->id] = $user->name;
 		}
@@ -218,9 +213,9 @@ class Server(){
 	}
 	
 	private function dohandshake($user,$buffer){
-		console("Requesting handshake...");
+		$this->console("Requesting handshake...");
 		list($resource,$host,$origin,$strkey,$data) = getheaders($buffer);
-		console("Handshaking...");
+		$this->console("Handshaking...");
 
 		$accept_key = $strkey . '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
 		$accept_key = sha1($accept_key, true);
@@ -234,11 +229,11 @@ class Server(){
 				  "Sec-WebSocket-Location: ws://" . $host . $resource . "\r\n\r\n";
 		socket_write($user->socket,$upgrade,strlen($upgrade));
 		$user->handshake=true;
-		console($upgrade);
-		console("Done handshaking...");
+		$this->console($upgrade);
+		$this->console("Done handshaking...");
 		if(count($users) > MAX_CLIENT_GLOBAL)
 		{
-			console("Server Room Full");
+			$this->console("Server Room Full");
 			send($user->socket,"", array("error"=>"RoomFull", "maxUser"=>$global_limit)); 
 			return disconnectSocket($user->socket, true);
 		}
@@ -327,7 +322,7 @@ class Server(){
 		$curr ="";
 		if($i == strlen($msg))
 		{
-			console("No message recived");
+			$this->console("No message recived");
 			return "";
 		}
 		while($i < strlen($msg))
@@ -359,7 +354,7 @@ class Server(){
 		}	
 	}
  
-	//Gibt Text in die Console aus
+	//Gibt Text in die $this->console aus
 	public function console($msg=""){ echo $msg."\n"; }
 }
 ?>

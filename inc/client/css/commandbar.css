@@ -1,0 +1,29 @@
+#sendText {
+	border: 1px solid #dadada;
+	font-size: 12px;
+	height: 30px;
+	width: 100%;
+}
+
+#sendTextDiv {
+	position: absolute;
+	left: 0px;
+	right: 50px;
+	top: 10px;
+	bottom: 10px;
+}
+
+#settingButton {
+	position: absolute;
+	right: 10px;
+	top: 10px;
+	bottom: 10px;
+	width: 30px;
+	height: 30px;
+	background-image: url('../img/gear.png');
+	border: 1px solid #dadada;
+}
+
+#settingButton:active {
+	background-color: #dadada;
+}

@@ -33,9 +33,11 @@ body {
 
 #commandbar {
 	position: absolute;
-	height: 50px;
+	padding-top: 10px;
+	padding-bottom: 10px;
+	height: 30px;
 	bottom: 0px;
 	right: 0px;
 	left: 200px;
-	border: 1px solid black;
+	background-color: #eeeeee;
 }

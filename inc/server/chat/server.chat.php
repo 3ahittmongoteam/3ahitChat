@@ -8,7 +8,8 @@ class Server(){
 	private $masterpasswort;
 	private $cmdManager;
 	private $sockets;
-	private $users = new array();
+	public $users = new array();
+	public $channels = new array();
 	
 	//Baut auf den Mastersocket einen Socket, der bereit zum hören ist, aber noch nicht aktiviert ist
 	public function __construct(){
@@ -19,9 +20,9 @@ class Server(){
 
 	public function run(){
 		socket_listen($this->mastersocket,MAX_CLIENT) or die("socket_listen() failed");		
-		say(PHP_EOL . "Server Started : ".date('Y-m-d H:i:s'));
-		say("Master socket  : ".$master);
-		say("Listening on   : ".SOCKET_ADDRESS." port ".SOCKET_PORT);
+		console(PHP_EOL . "Server Started : ".date('Y-m-d H:i:s'));
+		console("Master socket  : ".$master);
+		console("Listening on   : ".SOCKET_ADDRESS." port ".SOCKET_PORT);
 		
 		while(true){
 			set_time_limit(0);
@@ -33,7 +34,7 @@ class Server(){
 			foreach($changed as $SingleSocket){
 				if($SingleSocket == $this->mastersocket){
 					$newClientOnMasterSocket = socket_accept($this->mastersocket);
-					if($newClientOnMasterSocket == false){ say("socket_accept() failed"); continue; }
+					if($newClientOnMasterSocket == false){ console("socket_accept() failed"); continue; }
 					else { 
 						connect($newClientOnMasterSocket); 
 					}
@@ -191,37 +192,33 @@ class Server(){
 	}
 	
 	private function dohandshake($user,$buffer){
-	  global $users;
-	  global $roomLimit;
-	  console("\nRequesting handshake...");
-	  list($resource,$host,$origin,$strkey,$data) = getheaders($buffer);
-	  console("Handshaking...");
+		console("Requesting handshake...");
+		list($resource,$host,$origin,$strkey,$data) = getheaders($buffer);
+		console("Handshaking...");
 
 		$accept_key = $strkey . '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
 		$accept_key = sha1($accept_key, true);
 		$accept_key = base64_encode($accept_key);
 
-	  $upgrade  = "HTTP/1.1 101 Switching Protocols\r\n" .
+		$upgrade= "HTTP/1.1 101 Switching Protocols\r\n" .
 				  "Upgrade: WebSocket\r\n" .
 				  "Connection: Upgrade\r\n" .
 				  "Sec-WebSocket-Accept: ". $accept_key . "\r\n" .
 				  "Sec-WebSocket-Origin: " . $origin . "\r\n" .
 				  "Sec-WebSocket-Location: ws://" . $host . $resource . "\r\n\r\n";
-	  socket_write($user->socket,$upgrade,strlen($upgrade));
-	  $user->handshake=true;
-	  console($upgrade);
-	  console("Done handshaking...");
-		if(count($users) > $roomLimit || count($users) > 128)
+		socket_write($user->socket,$upgrade,strlen($upgrade));
+		$user->handshake=true;
+		console($upgrade);
+		console("Done handshaking...");
+		if(count($users) > MAX_CLIENT_GLOBAL)
 		{
-			say("Server Room Full");
-			$tofull = "You could not connect, because the room is full(".(count($users)-1)."/".($roomLimit).")";
-			var_dump($roomLimit,count($users) );
+			console("Server Room Full");
+			$error = "You could not connect, because the room is full(".(count($users)-1)."/".($roomLimit).")";
 			send($user->socket,$tofull); 
-			return disconnect($user->socket, true);
+			return disconnectSocket($user->socket, true);
 		}
-	  return true;
+		return true;
 	}
-
 	private function getheaders($req){
 	  $r=$h=$o=null;
 	  if(preg_match("/GET (.*) HTTP/"   ,$req,$match)){ $r=$match[1]; }
@@ -231,8 +228,79 @@ class Server(){
 	  if(preg_match("/\r\n(.*?)\$/",$req,$match)){ $data=$match[1]; }
 	  return array($r,$h,$o,$key,$data);
 	}
+	private function wrap($msg=""){ 
+	$formated = array();
+	$formated[0] = chr(129);
+	if(strlen($msg) <= 125){
+		$formated[1] = chr(strlen($msg));
+	} else if(strlen($msg) >= 126 && strlen($msg) <= 65535) {
+		$formated[1] = chr(126);
+		$formated[2] = chr((strlen($msg) >> 8) & 255);
+		$formated[3] = chr((strlen($msg)     ) & 255);
+	} else {
+		$formated[1] = chr(127);
+		$formated[2] = chr((strlen($msg) >> 56) & 255);
+		$formated[3] = chr((strlen($msg) >> 48) & 255);
+		$formated[4] = chr((strlen($msg) >> 40) & 255);
+		$formated[5] = chr((strlen($msg) >> 32) & 255);
+		$formated[6] = chr((strlen($msg) >> 24) & 255);
+		$formated[7] = chr((strlen($msg) >> 16) & 255);
+		$formated[8] = chr((strlen($msg) >>  8) & 255);
+		$formated[9] = chr((strlen($msg)      ) & 255);
+	}
 	
+	for ($it = 0; $it < strlen($msg); $it++){
+		array_push($formated, $msg[$it]);
+	}
 	
+	$ret = $formated[0];
+	if(strlen($msg) <= 125){
+		$ret .= $formated[1];
+		$ret .= implode(array_slice($formated, 2));
+	} else if(strlen($msg) >= 126 && strlen($msg) <= 65535) {
+		$ret .= $formated[1];
+		$ret .= $formated[2];
+		$ret .= $formated[3];
+		$ret .= implode(array_slice($formated, 4));
+	} else {
+		$ret .= $formated[1];
+		$ret .= $formated[2];
+		$ret .= $formated[3];
+		$ret .= $formated[4];
+		$ret .= $formated[5];
+		$ret .= $formated[6];
+		$ret .= $formated[7];
+		$ret .= $formated[8];
+		$ret .= $formated[9];
+		$ret .= implode(array_slice($formated, 10));
+	}
+	return $ret;
+}
+
+	function send($empfaenger,  $msg, $header=NULL){
+		$premsg = "";
+		foreach($header as $key=>$value){
+			$premsg .= $key.":".$value.PHP_EOL;
+		}
+		$premsg .= PHP_EOL;
+		if($header == NULL)
+			$premsg .= PHP_EOL;
+		$msg = wrap($premsg . urlToA($msg));
+		socket_write($client,$msg,strlen(($msg)));
+	}
+
+	function urlToA($string){
+    preg_match_all('/(http(?:s?):\/\/[^\s]+)/', $string, $matches);
+    if($matches)
+    {
+        foreach($matches[0] as $match)
+        {
+            $hypertext = '<a style="color: #689CD9;" href="' . $match . '" target="_blank">' . $match . '</a>';
+            $string = str_replace($match, $hypertext, $string);
+        }
+    }
+    return $string;
+	}  
 	//Gibt Text in die Console aus
 	public function console($msg=""){ echo $msg."\n"; }
 }

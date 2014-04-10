@@ -30,6 +30,7 @@ body {
 	top: 0px;
 	overflow-y: scroll;
 	background-color: white;
+	z-index: -1;
 }
 
 #commandbar {

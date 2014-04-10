@@ -1,0 +1,18 @@
+#settingbubblearrow {
+	position: absolute;
+	right: 20px;
+	width: 35px;
+	height: 35px;
+	bottom: 25px;
+	background-image: url('../img/bubblearrow.png');
+}
+
+#settingbubble {
+	position: absolute;
+	right: 20px;
+	width: 250px;
+	height: 300px;
+	bottom: 60px;
+	border: 1px solid #dadada;
+	background-color: #eeeeee;
+}

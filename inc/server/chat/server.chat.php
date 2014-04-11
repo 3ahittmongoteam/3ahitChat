@@ -1,5 +1,5 @@
 <?php
-define("DEBUGBOOL", true);
+define("DEBUGBOOL", false);
 class ChatServer{
 	private $mastersocket;
 	private $masterpasswort;
@@ -41,8 +41,8 @@ class ChatServer{
 						$this->connect($newClientOnMasterSocket); 
 					}
 				} else {
-					$bytes = @socket_recv($SingleSocket, $buffer, MAX_SIZE, 0);
-					if($bytes == 0){ $this->disconnectSocket($SingleSocket); }
+					$bytes = @socket_recv($SingleSocket, $buffer, 1024, 0);
+					if($bytes == 0){ debug($this->getUserBySocket($SingleSocket)->name . " disconnected!"); $this->disconnectSocket($SingleSocket); }
 					else{						
 						debug("Message recived");
 						$user = $this->getUserBySocket($SingleSocket);
@@ -217,9 +217,9 @@ class ChatServer{
 	}
 	
 	private function dohandshake($user,$buffer){
-		$this->console("Requesting handshake...");
+		debug("Requesting handshake...");
 		list($resource,$host,$origin,$strkey,$data) = $this->getheaders($buffer);
-		$this->console("Handshaking...");
+		debug("Handshaking...");
 
 		$accept_key = $strkey . '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
 		$accept_key = sha1($accept_key, true);
@@ -233,8 +233,8 @@ class ChatServer{
 				  "Sec-WebSocket-Location: ws://" . $host . $resource . "\r\n\r\n";
 		socket_write($user->socket,$upgrade,strlen($upgrade));
 		$user->handshake=true;
-		$this->console($upgrade);
-		$this->console("Done handshaking...");
+		debug($upgrade);
+		debug("Done handshaking...");
 		if(count($this->users) > MAX_CLIENT_GLOBAL)
 		{
 			$this->console("Server Room Full");
@@ -348,9 +348,9 @@ class ChatServer{
 			}
 		$premsg .= "\n";
 		if($header == NULL)
-			$premsg .= "\n";
+			$premsg .= "\n";			
+		$this->console($empfaenger->name . ": ". $msg);
 		$msg = $this->wrap($premsg . $msg);
-		console($empfaenger->name);
 		socket_write($empfaenger->socket,$msg,strlen($msg));
 	}
  

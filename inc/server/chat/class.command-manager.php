@@ -5,7 +5,8 @@
  * $str  ... command string(if its a command or not)
  * The return value is false, if the command was not found / not handled.
  * The return value is true, if a command driver handled the command successfully.
- */
+ */ 
+require_once('interface.command.php');
 class CommandManager {
 	private $commands = array();
 	private $server;
@@ -22,10 +23,13 @@ class CommandManager {
 	 * Drivers are automatically registered here. Place them in the command-drivers sub folder.
 	 */
 	private function registerCommands() {
-		$driverfiles = scandir('inc/server/chat/command-drivers');
+		$driverfiles = scandir(__DIR__."/command-drivers");
 		foreach($driverfiles as $driverfile) {
-			$classname = substr($driverfile, 0, strrchr($driverfile, '.'));
-			array_push($this->commands, new $classname());
+			if($driverfile != "." && $driverfile != "..") {
+				$classname = substr($driverfile, 0, strrpos($driverfile, '.'));
+				include(__DIR__."/command-drivers/".$driverfile);
+				array_push($this->commands, new $classname());
+			}
 		}
 	}
 	

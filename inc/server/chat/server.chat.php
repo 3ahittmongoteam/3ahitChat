@@ -1,5 +1,5 @@
 <?php
-
+define("DEBUGBOOL", true);
 class ChatServer{
 	private $mastersocket;
 	private $masterpasswort;
@@ -13,12 +13,13 @@ class ChatServer{
 	
 	//Baut auf den Mastersocket einen Socket, der bereit zum hören ist, aber noch nicht aktiviert ist
 	public function __construct(){
-		$this->cmdManager = new CommandManager($this);
-		$this->sockets = array($this->mastersocket);
+		debug("Chat-Server constructed");
+		$this->cmdManager = new CommandManager($this);		
 	}
 
 	public function run(){	
-		$this->mastersocket = $this->buildServer(SOCKET_ADDRESS,SOCKET_PORT);
+		$this->mastersocket = $this->buildServer(SOCKET_ADDRESS,SOCKET_PORT);		
+		$this->sockets = array($this->mastersocket);
 		socket_listen($this->mastersocket,MAX_CLIENT_GLOBAL) or die("socket_listen() failed");		
 		$this->console("\n" . "Server Started : ".date('Y-m-d H:i:s'));
 		$this->console("Master socket  : ".$this->mastersocket);
@@ -29,21 +30,23 @@ class ChatServer{
 			ob_implicit_flush();						
 			
 			$changed = $this->sockets;
-			@socket_select($changed,$e = NULL, $a = NULL,NULL);
+			$e = $a = NULL;
+			@socket_select($changed,$e, $a,0);
 			
 			foreach($changed as $SingleSocket){
 				if($SingleSocket == $this->mastersocket){
 					$newClientOnMasterSocket = socket_accept($this->mastersocket);
 					if($newClientOnMasterSocket == false){ $this->console("socket_accept() failed"); continue; }
 					else { 
-						connect($newClientOnMasterSocket); 
+						$this->connect($newClientOnMasterSocket); 
 					}
 				} else {
 					$bytes = @socket_recv($SingleSocket, $buffer, MAX_SIZE, 0);
 					if($bytes == 0){ $this->disconnectSocket($SingleSocket); }
-					else{
-						$user = $this->getUserBySocket($socket);
-						if(!$user->handshake){ $this->dohandshake($user,$buffer); }
+					else{						
+						debug("Message recived");
+						$user = $this->getUserBySocket($SingleSocket);
+						if(!$user->handshake){ debug("Initializing handshake"); $this->dohandshake($user,$buffer); }
 						else { $this->processMessage($user,$buffer); }
 					}
 				}
@@ -55,24 +58,25 @@ class ChatServer{
 		$value = unpack('H*', $msg[0]);
 		$opcode =  base_convert($value[1], 16, 10);
 		if($opcode == 136 ||$opcode == 8) return $this->disconnectSocket($sender->socket);
-		$msg = decode($msg);
+		$msg = $this->decode($msg);
 		
 		$whole = explode("\n\n", $msg);
-		if(count($whole) < 2) { var_dump($whole); return $this->console("Bad Package: "); }
+		if(count($whole) < 2) { return $this->console("Bad Package: No Headers were transmited"); }
 		$action = $whole[1];
 		$header = $whole[0];
-		if(strlen($action) > $char_limit) return send($sender->socket, "", array("Error"=>"TextTooLong","MaxAnzahl"=>$char_limit));
+		if(strlen($action) > $this->char_limit) return $this->send($sender, "", array("Error"=>"TextTooLong","MaxAnzahl"=>$char_limit));
 		
-		if(processCommand($sender, $action)) return $this->console("Command executed: ". $action);
+		if($this->cmdManager->processCommand($sender, $action)) return $this->console("Command executed: ". $action);
 
 		switch($action){
-			case ""  : send($user->socket,"", array("Error"=>"NoMessage"));  break;
-		default      : sendAll($user->socket,$action);   			  break;
+			case ""  : $this->send($sender,"", array("Error"=>"NoMessage"));  break;
+		default      : $this->sendAll($sender,$action);   					  break;
 	  }
 		
 	}
 	
 	private function connect($socketToConnect){
+		debug("New user");
 		$user = new User($socketToConnect);
 		array_push($this->users, $user);
 		array_push($this->sockets, $socketToConnect);
@@ -214,7 +218,7 @@ class ChatServer{
 	
 	private function dohandshake($user,$buffer){
 		$this->console("Requesting handshake...");
-		list($resource,$host,$origin,$strkey,$data) = getheaders($buffer);
+		list($resource,$host,$origin,$strkey,$data) = $this->getheaders($buffer);
 		$this->console("Handshaking...");
 
 		$accept_key = $strkey . '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
@@ -231,10 +235,10 @@ class ChatServer{
 		$user->handshake=true;
 		$this->console($upgrade);
 		$this->console("Done handshaking...");
-		if(count($users) > MAX_CLIENT_GLOBAL)
+		if(count($this->users) > MAX_CLIENT_GLOBAL)
 		{
 			$this->console("Server Room Full");
-			send($user->socket,"", array("error"=>"RoomFull", "maxUser"=>$global_limit)); 
+			send($user,"", array("error"=>"RoomFull", "maxUser"=>$global_limit)); 
 			return disconnectSocket($user->socket, true);
 		}
 		return true;
@@ -338,23 +342,26 @@ class ChatServer{
 	
 	function send($empfaenger,  $msg, $header=NULL){
 		$premsg = "";
-		foreach($header as $key=>$value){
-			$premsg .= $key.":".$value."\n";
-		}
+		if(isset($header) && !empty($header))
+			foreach($header as $key=>$value){
+				$premsg .= $key.":".$value."\n";
+			}
 		$premsg .= "\n";
 		if($header == NULL)
 			$premsg .= "\n";
-		$msg = wrap($premsg . $msg);
-		socket_write($client,$msg,strlen(($msg)));
+		$msg = $this->wrap($premsg . $msg);
+		console($empfaenger->name);
+		socket_write($empfaenger->socket,$msg,strlen($msg));
 	}
  
 	function sendAll($sender,  $msg, $header=NULL){
 		foreach($this->users as $u){
-			send($u, $msg, $header);
+			$this->send($u, $msg, $header);
 		}	
 	}
  
 	//Gibt Text in die $this->console aus
 	public function console($msg=""){ echo $msg."\n"; }
 }
+function debug($msg){ if(DEBUGBOOL) echo "$msg\n"; }
 ?>

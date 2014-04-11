@@ -9,7 +9,10 @@ Communication.prototype.sendPacket = function(header, message) {
 	var packet = "";
 	for(var key in header)
 		packet += key + ":" + header[key] + "\n";
+	if(packet == "")
+		packet += "\n";
 	packet += "\n";
+	
 	packet += message;
 	this.socket.send(packet);
 }

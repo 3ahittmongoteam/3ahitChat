@@ -1,2 +1,2 @@
-*.log
-settings.php
+www/build
+*.lock

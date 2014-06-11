@@ -1,4 +1,4 @@
-#settingbubblearrow {
+#settingBubbleArrow {
 	position: absolute;
 	right: 20px;
 	width: 35px;
@@ -8,7 +8,7 @@
 	display: none;
 }
 
-#settingbubble {
+#settingBubble {
 	position: absolute;
 	right: 20px;
 	width: 250px;

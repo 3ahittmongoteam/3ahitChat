@@ -6,23 +6,20 @@
 <link rel="stylesheet" type="text/css" href="css/sidebar.css" />
 <link rel="stylesheet" type="text/css" href="css/commandbar.css" />
 <link rel="stylesheet" type="text/css" href="css/settingbubble.css" />
-<script type="text/javascript" src="js/uiinteraction.js"></script>
-<script type="text/javascript" src="js/communication.js"></script>
 </head>
-<body onload="initUI();" onclick="on_BodyClick();">
+<body>
   <div id="sidebar"></div>
   <div id="messagecontent"></div>
   <div id="commandbar">
     <div id="sendTextDiv">
       <input id="sendText" type="text" />
     </div>
-    <div id="settingButton" onclick="on_SettingButtonClick();"></div>
-    <div id="settingbubble" onclick="keepBubbleAlive();">
-      <a href="javascript: addChannel('bob', 42);">Add a channel
-        test</a> <a href="javascript: goFullScreen();"
-        onclick="goFullScreen();">FullScreen</a>
+    <div id="settingButton"></div>
+    <div id="settingBubble">
+      <a href="#">Add a channeltest</a>
+      <a href="#" id="fullscreen">FullScreen</a>
     </div>
-    <div id="settingbubblearrow" onclick="keepBubbleAlive();"></div>
+    <div id="settingBubbleArrow"></div>
   </div>
   <script type="application/dart" src="dart/main.dart"></script>
   <script src="packages/browser/dart.js"></script>

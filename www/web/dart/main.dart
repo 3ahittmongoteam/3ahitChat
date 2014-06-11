@@ -1,8 +1,10 @@
-library ahittchat;
+library ahittchat_client;
 
 import "dart:html";
 
+part "Gui.dart";
+
 void main() {
-  InputElement txt = querySelector("#sendText");
-  txt.value = "lolz";
+  Gui gui = new Gui();
+  gui.init();
 }

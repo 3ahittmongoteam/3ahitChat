@@ -1,5 +1,6 @@
 www/build
 www/packages
+packages
 *.lock
 *.dart.js
 *.dart.js.map

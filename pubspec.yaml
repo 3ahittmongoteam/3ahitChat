@@ -1,0 +1,4 @@
+name: ahittchat_server
+description: A sample web application
+dependencies:
+  io: any

@@ -1,4 +1,5 @@
 name: ahittchat_server
 description: A sample web application
 dependencies:
+  http_server: any
   io: any
